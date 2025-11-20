@@ -2,9 +2,8 @@ name: Daily Attendance Check-in
 
 on:
   schedule:
-    # Runs Mon-Fri at 3:30 AM UTC (9:00 AM IST)
     - cron: '30 3 * * 1-5'
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
 
 env:
   TZ: 'Asia/Kolkata'
@@ -12,13 +11,14 @@ env:
 jobs:
   checkin:
     runs-on: ubuntu-latest
+    environment: automation  # Add this line!
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
@@ -38,10 +38,10 @@ jobs:
           RAZORPAY_PASSWORD: ${{ secrets.RAZORPAY_PASSWORD }}
         run: python checkin.py
       
-      - name: Upload screenshot on failure
-        if: failure()
+      - name: Upload screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: error-screenshot
-          path: error.png
-
+          name: attendance-screenshots-${{ github.run_number }}
+          path: '*.png'
+          retention-days: 7
