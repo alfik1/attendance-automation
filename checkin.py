@@ -21,6 +21,17 @@ def setup_driver(headless=False):
 
 def checkin(email, password, headless=False):
     """Automated check-in"""
+    # Leave dates - add your leave dates here
+    LEAVE_DATES = [
+        '2025-11-25',  # Example leave date
+        '2025-12-25',  # Christmas
+    ]
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    if today in LEAVE_DATES:
+        print(f"🏖️ Today ({today}) is marked as leave. Skipping check-in.")
+        return True
+    """Automated check-in"""
     print("🚀 Starting check-in automation...")
     driver = setup_driver(headless=headless)
     
