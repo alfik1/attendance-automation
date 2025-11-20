@@ -1,0 +1,46 @@
+name: Daily Attendance Check-in
+
+on:
+  schedule:
+    # Runs Mon-Fri at 3:30 AM UTC (9:00 AM IST)
+    - cron: '30 3 * * 1-5'
+  workflow_dispatch:  # Allows manual trigger
+
+env:
+  TZ: 'Asia/Kolkata'
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@latest
+        
+      - name: Install ChromeDriver
+        uses: nanasess/setup-chromedriver@master
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run check-in script
+        env:
+          RAZORPAY_EMAIL: ${{ secrets.RAZORPAY_EMAIL }}
+          RAZORPAY_PASSWORD: ${{ secrets.RAZORPAY_PASSWORD }}
+        run: python checkin.py
+      
+      - name: Upload screenshot on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: error-screenshot
+          path: error.png
