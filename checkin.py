@@ -5,6 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import time
+import os
+
 
 def setup_driver(headless=False):
     """Setup Chrome driver with options"""
@@ -19,18 +21,8 @@ def setup_driver(headless=False):
     
     return webdriver.Chrome(options=chrome_options)
 
+
 def checkin(email, password, headless=False):
-    """Automated check-in"""
-    # Leave dates - add your leave dates here
-    LEAVE_DATES = [
-        '2025-11-25',  # Example leave date
-        '2025-12-25',  # Christmas
-    ]
-    
-    today = datetime.now().strftime('%Y-%m-%d')
-    if today in LEAVE_DATES:
-        print(f"🏖️ Today ({today}) is marked as leave. Skipping check-in.")
-        return True
     """Automated check-in"""
     print("🚀 Starting check-in automation...")
     driver = setup_driver(headless=headless)
@@ -89,7 +81,6 @@ def checkin(email, password, headless=False):
             print("⏳ Not checked in yet, proceeding with check-in...")
         
         # Step 6: Try to find and click check-in button
-        # The button might be in the notification banner at the top
         try:
             # Wait for any check-in related button
             checkin_button = WebDriverWait(driver, 10).until(
@@ -133,23 +124,35 @@ def checkin(email, password, headless=False):
         driver.quit()
         print("✅ Browser closed")
 
+
 if __name__ == "__main__":
-    import os
-    from dotenv import load_dotenv
+    # Try to load .env file if it exists (for local development only)
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        print("✅ Loaded .env file")
+    except ImportError:
+        print("ℹ️  Running without .env (using environment variables)")
     
-    # Load environment variables from .env file
-    load_dotenv()
-    # Get credentials from environment variables or use defaults
-    EMAIL = os.environ.get('RAZORPAY_EMAIL', 'alfik.majeed@zartek.in')
-    PASSWORD = os.environ.get('RAZORPAY_PASSWORD', 'your_password_here')
+    # Get credentials from environment variables
+    EMAIL = os.environ.get('RAZORPAY_EMAIL')
+    PASSWORD = os.environ.get('RAZORPAY_PASSWORD')
+    
+    if not EMAIL or not PASSWORD:
+        print("❌ Error: RAZORPAY_EMAIL and RAZORPAY_PASSWORD must be set")
+        exit(1)
     
     print("=" * 50)
     print("🧪 ATTENDANCE AUTO CHECK-IN")
     print("=" * 50)
     
-    success = checkin(EMAIL, PASSWORD, headless=False)
+    # Use headless mode in CI environment
+    is_ci = os.environ.get('CI', 'false').lower() == 'true'
+    success = checkin(EMAIL, PASSWORD, headless=is_ci)
     
     if success:
         print("\n✅ Check-in process completed successfully!")
+        exit(0)
     else:
         print("\n❌ Check-in failed! Check screenshots for details")
+        exit(1)
