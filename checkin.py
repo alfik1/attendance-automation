@@ -128,8 +128,6 @@ if __name__ == "__main__":
     
     # Load environment variables from .env file
     load_dotenv()
-    print(os.environ.get('RAZORPAY_EMAIL'),"ggggggg")
-    print(os.environ.get('RAZORPAY_PASSWORD'))
     # Get credentials from environment variables or use defaults
     EMAIL = os.environ.get('RAZORPAY_EMAIL', 'alfik.majeed@zartek.in')
     PASSWORD = os.environ.get('RAZORPAY_PASSWORD', 'your_password_here')
